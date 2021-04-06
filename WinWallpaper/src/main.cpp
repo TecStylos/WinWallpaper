@@ -1,25 +1,26 @@
 #include <iostream>
 #include <windows.h>
 
-BOOL CALLBACK EnumWorkerWProc(HWND hWnd, LPARAM lParam)
-{
-	HWND p = FindWindowEx(hWnd, NULL, L"SHELLDLL_DefView", NULL);
-	HWND* ret = (HWND*)lParam;
-
-	if (p)
-	{
-		*ret = FindWindowEx(NULL, hWnd, L"WorkerW", NULL);
-	}
-
-	return true;
-}
-
 HWND getWallpaperHandle()
 {
 	HWND progman = FindWindow(L"ProgMan", NULL);
 	SendMessageTimeout(progman, 0x052C, 0, 0, SMTO_NORMAL, 1000, NULL);
 	HWND hWndWallpaper = NULL;
-	EnumWindows(EnumWorkerWProc, (LPARAM)&hWndWallpaper);
+
+	auto enumFunc = [](HWND hWnd, LPARAM lParam) -> BOOL {
+		HWND p = FindWindowEx(hWnd, NULL, L"SHELLDLL_DefView", NULL);
+		HWND* ret = (HWND*)lParam;
+
+		if (p)
+		{
+			*ret = FindWindowEx(NULL, hWnd, L"WorkerW", NULL);
+		}
+
+		return true;
+	};
+
+	EnumWindows(enumFunc, (LPARAM)&hWndWallpaper);
+
 	return hWndWallpaper;
 }
 
